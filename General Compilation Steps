@@ -1,0 +1,145 @@
+# ⚙️ General AVR Compilation Steps
+
+The following steps are used to compile and program an Embedded C program for the **ATmega328P**.
+
+The complete process is:
+
+```text
+C Source Code
+     ↓
+avr-gcc
+     ↓
+ELF File
+     ↓
+avr-objcopy
+     ↓
+HEX File
+     ↓
+avrdude
+     ↓
+ATmega328P Flash
+
+1️⃣ Write the Embedded C Program
+Create your C source file:
+nano blink.c
+
+Example:
+#include <avr/io.h>
+
+int main(void)
+{
+    DDRB |= (1 << PB5);
+
+    while (1)
+    {
+        PORTB |= (1 << PB5);
+    }
+}
+
+2️⃣ Compile the C Program
+Use avr-gcc to compile the program for the ATmega328P:
+avr-gcc -mmcu=atmega328p -Os -o blink.elf blink.c
+
+🔍 Command Breakdown
+Option	Purpose
+avr-gcc	AVR C compiler
+-mmcu=atmega328p	Specifies the target microcontroller
+-Os	Optimizes the program for smaller size
+-o blink.elf	Specifies the output ELF file
+blink.c	Input C source file
+
+
+The result is:
+blink.elf
+
+3️⃣ Convert ELF to HEX
+Convert the ELF file into Intel HEX format using avr-objcopy:
+avr-objcopy -O ihex -R .eeprom blink.elf blink.hex
+
+🔍 Command Breakdown
+Option	Purpose
+avr-objcopy	Converts the generated file format
+-O ihex	Selects Intel HEX as the output format
+-R .eeprom	Removes the EEPROM section
+blink.elf	Input ELF file
+blink.hex	Output HEX file
+
+
+The result is:
+blink.hex
+
+4️⃣ Check the Program Size
+You can check how much Flash and RAM the program uses:
+avr-size blink.elf
+
+Example:
+   text    data     bss     dec     hex
+    120       0       0     120      78
+
+5️⃣ Connect the ATmega328P
+Connect the ATmega328P to your programmer or development board.
+
+For an Arduino Uno, the USB serial device may appear as:
+/dev/ttyACM0
+
+You can check available serial ports using:
+ls /dev/ttyACM*
+
+6️⃣ Upload the HEX File
+For an ATmega328P using an Arduino-style bootloader:
+avrdude -p m328p -c arduino -P /dev/ttyACM0 -b 115200 -U flash:w:blink.hex:i
+
+🔍 Command Breakdown
+Option	Purpose
+avrdude	AVR programming utility
+-p m328p	Target device: ATmega328P
+-c arduino	Arduino bootloader protocol
+-P /dev/ttyACM0	Serial communication port
+-b 115200	Baud rate
+-U	Performs a memory operation
+flash	Target Flash memory
+w	Write operation
+blink.hex	HEX file to upload
+i	Intel HEX format
+
+
+7️⃣ Complete Workflow
+For a program called blink.c:
+📝 Source Code
+blink.c
+
+🔨 Compile
+avr-gcc -mmcu=atmega328p -Os -o blink.elf blink.c
+
+🔄 Convert
+avr-objcopy -O ihex -R .eeprom blink.elf blink.hex
+
+📊 Check Size
+avr-size blink.elf
+
+🚀 Upload
+avrdude -p m328p -c arduino -P /dev/ttyACM0 -b 115200 -U flash:w:blink.hex:i
+
+🎯 Summary
+blink.c
+   │
+   │ avr-gcc
+   ↓
+blink.elf
+   │
+   │ avr-objcopy
+   ↓
+blink.hex
+   │
+   │ avrdude
+   ↓
+ATmega328P Flash
+   │
+   ↓
+Program Execution
+
+🧰 Tools Used
+- avr-gcc → Compiles the Embedded C program
+- avr-objcopy → Converts ELF to HEX
+- avr-size → Displays program memory usage
+- avrdude → Uploads the HEX file to the ATmega328P
